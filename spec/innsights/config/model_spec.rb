@@ -50,6 +50,26 @@ describe Innsights::Config::Model do
         report.instance_variable_get("@condition").should == nil
       end
     end
+    context 'With measure' do
+      it 'sets the measure' do
+        report.report :something
+        report.measure :my_measure
+        report.metrics.should eq my_measure: :my_measure
+      end
+    end
+    context 'With aggregates' do
+      it 'sets the aggregates' do
+        report.report :something
+        report.aggregate :cool_attribute
+        report.aggregates.should eq cool_attribute: :cool_attribute
+      end
+
+      it 'sets an aggregate with an optional value' do
+        report.report :something
+        report.aggregate 'My ultra cool attibute', with: :cool_attribute
+        report.aggregates.should eq 'My ultra cool attibute' => :cool_attribute
+      end
+    end
   end
 
   describe '.valid_for_push?' do

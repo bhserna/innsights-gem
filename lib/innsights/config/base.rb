@@ -10,7 +10,7 @@ module Innsights
       include Helpers::Config
 
       attr_accessor :name, :created_at_method, :report_user, :report_group, :metrics, :condition
-      
+
       # @!macro [attach] inn.dsl
       # @!method $1(value, &block)
       # DSL method that takes the $1 value, method name or eval block and sets the $2 property
@@ -60,10 +60,32 @@ module Innsights
       #   example_report.metrics # => {rooms: :rooms}
       #   example_report.measure("Area", with: :km2)
       #   example_report.metrics # => {"Area": :km2}
-      def measure(name, options={})
+      def measure(name, options = nil)
         options ||= {with: name}
         metrics.merge!({name.to_sym => options[:with]})
         self
+      end
+
+      # DSL attribute that sets any number of aggregate measured in the given report
+      # optionally receives the :with option with the name of the method to call
+      #
+      # @param [String, Symbol] name the name of the aggregate
+      # @param [Hash] options method options
+      # @option options [Symbol] :with name of the method to call in the record
+      # @example
+      #   example_report = Config::ModelReport.new(Property)
+      #   example_report.aggregate(:rooms)
+      #   example_report.aggregates # => { rooms: :rooms }
+      #   example_report.aggregate("Area", with: :km2)
+      #   example_report.aggregates # => { "Area": :km2 }
+      def aggregate(name, options = nil)
+        options ||= { with: name }
+        aggregates.merge! name => options[:with]
+        self
+      end
+
+      def aggregates
+        @aggregates ||= {}
       end
 
       # Sets up the configured report and returns the prepared proc for callback

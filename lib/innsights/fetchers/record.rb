@@ -13,7 +13,7 @@ module Innsights
     class Record
       include Innsights::Helpers::Config
 
-      attr_accessor :record, :report, :name, :user, :group, :metrics, :created_at, :condition
+      attr_accessor :record, :report, :name, :user, :group, :metrics, :created_at, :condition, :aggregates
 
       # Fetches the information from the record with the configuration set in report
       # 
@@ -26,7 +26,8 @@ module Innsights
         @user = attr_call(report.report_user)
         @group = attr_call(report.report_group)
         @created_at = attr_call(report.created_at_method)
-        @metrics = fetch_metrics(report.metrics)
+        @metrics = fetch_hash(report.metrics)
+        @aggregates = fetch_hash(report.aggregates)
       end
 
       # Prepared hash to create a new Report
@@ -34,7 +35,7 @@ module Innsights
       # 
       # @return [Hash] with the attributes needed by the Report
       def options
-        {user: user, group: group, created_at: created_at, measure: metrics}
+        aggregates.merge user: user, group: group, created_at: created_at, measure: metrics
       end
 
       # Specifies if the report should be sent to the service
@@ -48,11 +49,11 @@ module Innsights
 
       private
 
-      def fetch_metrics(raw_metrics)
+      def fetch_hash(raw_hash)
         result = {}
-        raw_metrics.each do |key, value|
-          metric_value = attr_call(value)
-          result[key] = metric_value unless metric_value.nil?
+        raw_hash.each do |key, value|
+          value = attr_call(value)
+          result[key] = value unless value.nil?
         end
         result
       end
